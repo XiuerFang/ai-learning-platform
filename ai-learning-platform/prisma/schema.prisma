@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 用户模型
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  avatar    String?
+  role      String   @default("USER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 关系
+  contents  LearningContent[]
+  posts     CommunityPost[]
+  comments  Comment[]
+}
+
+// 学习内容
+model LearningContent {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String?
+  content     String
+  coverImage  String?
+  category    String
+  tags        String
+  authorId    String?
+  authorName  String?
+  published   Boolean  @default(false)
+  viewCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author      User?    @relation(fields: [authorId], references: [id])
+}
+
+// 社区帖子
+model CommunityPost {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  authorId  String
+  tags      String
+  viewCount Int      @default(0)
+  likes     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author    User      @relation(fields: [authorId], references: [id])
+  comments  Comment[]
+}
+
+// 评论
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  postId    String
+  authorId  String
+  createdAt DateTime @default(now())
+
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User         @relation(fields: [authorId], references: [id])
+}
+
+// AI 工具
+model AiTool {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  nameEn      String?
+  description String
+  icon        String?
+  url         String?
+  category    String
+  tags        String
+  isPremium   Boolean  @default(false)
+  isHot      Boolean  @default(false)
+  sortOrder  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
